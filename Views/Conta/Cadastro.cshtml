@@ -1,0 +1,92 @@
+﻿@model SiteLoja.Models.Usuario
+
+@{
+    ViewData["Title"] = "Cadastro";
+}
+
+<div class="row justify-content-center px-3">
+    <div class="col-12 col-md-5">
+        <h2 class="text-center">Criar Conta</h2>
+        <hr />
+
+        <form asp-controller="Conta" asp-action="Cadastro" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="mb-3">
+                <label asp-for="Nome" class="form-label"></label>
+                <input asp-for="Nome" class="form-control" />
+                <span asp-validation-for="Nome" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label"></label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Senha" class="form-label"></label>
+                <input asp-for="Senha" type="password" class="form-control" />
+                <span asp-validation-for="Senha" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <h4>Endereço</h4>
+                <hr />
+                <div class="mb-3">
+                    <label asp-for="EnderecoCliente.CEP" class="form-label"></label>
+                    <input asp-for="EnderecoCliente.CEP" class="form-control" />
+                    <span asp-validation-for="EnderecoCliente.CEP" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="EnderecoCliente.Rua" class="form-label"></label>
+                    <input asp-for="EnderecoCliente.Rua" class="form-control" />
+                    <span asp-validation-for="EnderecoCliente.Rua" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="EnderecoCliente.Numero" class="form-label"></label>
+                    <input asp-for="EnderecoCliente.Numero" class="form-control" />
+                    <span asp-validation-for="EnderecoCliente.Numero" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="EnderecoCliente.Cidade" class="form-label"></label>
+                    <input asp-for="EnderecoCliente.Cidade" class="form-control" />
+                    <span asp-validation-for="EnderecoCliente.Cidade" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="EnderecoCliente.Estado" class="form-label"></label>
+                    <input asp-for="EnderecoCliente.Estado" class="form-control" />
+                    <span asp-validation-for="EnderecoCliente.Estado" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="EnderecoCliente.Complemento" class="form-label"></label>
+                    <input asp-for="EnderecoCliente.Complemento" class="form-control" />
+                    <span asp-validation-for="EnderecoCliente.Complemento" class="text-danger"></span>
+                </div>
+
+            </div>
+
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-success">Cadastrar</button>
+            </div>
+
+            <hr />
+
+            <p class="text-center">
+                Já tem conta? <a asp-controller="Conta" asp-action="Login">Acesse aqui</a>.
+            </p>
+        </form>
+    </div>
+
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

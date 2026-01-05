@@ -1,0 +1,68 @@
+﻿@using SiteLoja.Models 
+@model ProdutoFormViewModel
+@{
+    ViewData["Title"] = "Cadastrar Novo Produto";
+}
+
+<div class="container">
+    <h2>➕ Cadastro de Novo Produto</h2>
+
+    <hr />
+
+    <div class="row">
+        <div class="col-md-6">
+            <form asp-action="Novo" method="post" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Nome" class="form-label"></label>
+                    <input asp-for="Nome" class="form-control" />
+                    <span asp-validation-for="Nome" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="ImagemUpload" class="form-label"></label>
+                    <input asp-for="ImagemUpload" type="file" class="form-control" accept="image/*" />
+                    <span asp-validation-for="ImagemUpload" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Preco" class="form-label"></label>
+                    <input asp-for="Preco" type="number" step="0.01" class="form-control" />
+                    <span asp-validation-for="Preco" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Categoria" class="form-label"></label>
+                    <input asp-for="Categoria" class="form-control" />
+                    <span asp-validation-for="Categoria" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Desconto" class="form-label"></label>
+                    <input asp-for="Desconto" class="form-control" placeholder="Ex: 10% OFF" />
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="PrecoPix" class="form-label"></label>
+                    <input asp-for="PrecoPix" class="form-control" placeholder="Ex: R$ 95,00 no Pix" />
+                </div>
+
+                <div class="form-group mt-4">
+                    <button type="submit" class="btn btn-primary">Salvar Produto</button>
+                    <a asp-action="Index" asp-controller="Admin" class="btn btn-secondary">Cancelar</a>
+                </div>
+                <a asp-action="Atualizar" asp-controller="Admin" class="btn btn-warning ms-3">
+                    <i class="fas fa-edit"></i> Atualizar Produto
+                </a>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

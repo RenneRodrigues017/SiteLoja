@@ -1,0 +1,78 @@
+﻿@using SiteLoja.Models
+@using SiteLoja.ViewModels
+@model AtualizarProdutoViewModel 
+
+
+@{
+    ViewData["Title"] = "Atualizar Produto";
+    var resultados = Model.ResultadosBusca;
+}
+
+<div class="container">
+    <h2>🔄 Atualizar Produto (Busca)</h2>
+
+    @* Exibição de mensagens de sucesso/erro via TempData (agora usadas após o redirect de Salvar) *@
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success mt-3" role="alert">
+            <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger mt-3" role="alert">
+            <i class="fas fa-times-circle"></i> @TempData["ErrorMessage"]
+        </div>
+    }
+    <hr />
+
+    @* Formulário de Busca (GET) *@
+    <div class="row mb-5">
+        <div class="col-md-6">
+            <form asp-action="Atualizar" method="get">
+                <div class="input-group">
+                    <input type="text" name="termoBusca" value="@Model.TermoBusca" placeholder="Digite o nome do produto para buscar" class="form-control" />
+                    <button type="submit" class="btn btn-info">Buscar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @* Tabela de Resultados da Busca *@
+    @if (resultados != null && resultados.Any())
+    {
+        <h3>Resultados da Busca (@resultados.Count)</h3>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Categoria</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var produto in resultados)
+                {
+                    <tr>
+                        <td>@produto.Nome</td>
+                        <td>@produto.Categoria</td>
+                        <td>
+                            <a asp-action="Editar"
+                               asp-controller="Admin"
+                               asp-route-id="@produto.Id"
+                               asp-route-termoBuscaOriginal="@Model.TermoBusca"
+                               class="btn btn-sm btn-primary">Editar</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

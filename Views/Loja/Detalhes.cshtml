@@ -1,0 +1,308 @@
+﻿@model SiteLoja.Models.DetalheProdutoViewModel
+@using System.Globalization
+
+@{
+    ViewData["Title"] = @Model.Nome;
+    var culturaBR = new CultureInfo("pt-BR");
+
+    var temDesconto = Model.PrecoVenda < Model.PrecoOriginal;
+    int precoEmCentavos = (int)(Model.PrecoVenda * 100m);
+}
+
+<div class="container mt-4 mb-5">
+
+    <div class="product-details-card">
+        <div class="row">
+
+            @* 🖼️ COLUNA DA IMAGEM *@
+            <div class="col-lg-6 mb-4 mb-lg-0">
+                <img src="@Model.ImagemBase64" alt="@Model.Nome" class="img-fluid produto-imagem-detail" loading="lazy" />
+            </div>
+
+            @* 🛒 COLUNA DE INFORMAÇÕES E COMPRA *@
+            <div class="col-lg-6">
+
+                @* 📌 TÍTULO *@
+                <h1 class="product-name-title">@Model.Nome</h1>
+                <hr class="d-lg-none" /> @* Separador no mobile *@
+
+                <form id="formCompra" asp-controller="Loja" asp-action="Endereco" method="get">
+                    <input type="hidden" name="ProdutoId" value="@Model.Id" />
+                    <input type="hidden" name="ProdutoNome" value="@Model.Nome" />
+
+                    @* 📏 1. SELEÇÃO DE NUMERAÇÃO *@
+                    <h4 class="mb-3 mt-4 mt-lg-0 section-heading">1. Selecione a Numeração</h4>
+                    <div class="btn-group-toggle d-flex flex-wrap mb-2" data-toggle="buttons" id="tamanho-opcoes">
+                        @{
+                            var tamanhos = Enumerable.Range(38, 6);
+                        }
+                        @foreach (var tamanho in tamanhos)
+                        {
+                            <label class="btn btn-outline-dark me-2 mb-2 btn-size-modern">
+                                <input type="radio" name="Tamanho" value="@tamanho" /> @tamanho
+                            </label>
+                        }
+                    </div>
+
+                    @* 🚨 CONTAINER DA MENSAGEM DE ERRO (MOVIDO PARA CÁ) *@
+                    <div id="tamanho-error-message" class="mb-4"></div>
+
+
+                    @* 💰 2. DETALHES DO PREÇO *@
+                    <h4 class="mb-3 section-heading">2. Detalhes de Preço</h4>
+                    <div class="mb-4 p-3 price-box">
+
+                        @if (temDesconto)
+                        {
+                            <p class="price-original-detail mb-0">
+                                De: @Model.PrecoOriginal.ToString("C", culturaBR)
+                            </p>
+                        }
+
+                        <p class="price-venda-detail">
+                            Por: @Model.PrecoVenda.ToString("C", culturaBR)
+                        </p>
+
+                        @* Bloco do PIX *@
+                        @if (!string.IsNullOrEmpty(Model.PrecoPix))
+                        {
+                            <p class="price-pix-detail fw-bold mb-1 d-flex align-items-center">
+                                <i class="fas fa-qrcode me-2"></i>
+                                @Model.PrecoPix no Pix
+                            </p>
+                        }
+
+                        @* Bloco do Parcelamento *@
+                        @if (!string.IsNullOrEmpty(Model.Parcelamento))
+                        {
+                            <p class="price-parcelamento-detail">
+                                Em ate 12x!
+                            </p>
+                        }
+
+                    </div>
+
+                    @* 🛒 3. BOTÃO DE COMPRA *@
+                    <div class="d-grid gap-2 mb-4">
+                        <button type="submit" class="btn btn-success btn-lg btn-buy-cta">Comprar Agora</button>
+                    </div>
+
+                    @* O container original foi removido daqui *@
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    /* --- INÍCIO: CSS para Detalhes do Produto (Ajustes de Compactação e Imagem Corrigida) --- */
+
+    /* 1. Layout Principal em Card (Compactado) */
+    .product-details-card {
+        background-color: var(--card, #ffffff);
+        border-radius: var(--radius, 10px);
+        box-shadow: 0 10px 30px var(--shadow, rgba(16, 24, 40, 0.08));
+        /* Reduz o padding do card principal (Desktop) */
+        padding: 20px;
+    }
+
+    /* 2. Estilo do Título do Produto (Compactado) */
+    .product-name-title {
+        font-size: 2.0rem; /* Reduzido de 2.5rem */
+        font-weight: 800;
+        margin-bottom: 8px; /* Margem menor */
+        color: var(--text, #111);
+        line-height: 1.1;
+    }
+
+    /* 3. Títulos de Seção (Passo 1, Passo 2) (Compactado) */
+    .section-heading {
+        font-size: 1.2rem; /* Reduzido de 1.3rem */
+        font-weight: 600;
+        color: var(--text, #111);
+        border-bottom: 2px solid #eee;
+        padding-bottom: 3px; /* Linha mais próxima ao texto */
+        margin-bottom: 12px !important; /* Margem menor */
+    }
+
+    /* 4. Estilos de Numeração Moderno (MANTIDOS) */
+    .btn-size-modern {
+        padding: 10px 18px;
+        border-radius: 8px;
+        font-weight: 600;
+        border: 1px solid var(--muted, #8a8a8a);
+        transition: all 0.2s ease-in-out;
+        color: var(--text, #111);
+        cursor: pointer;
+        user-select: none;
+    }
+
+        .btn-size-modern input[type="radio"] {
+            display: none;
+        }
+
+        .btn-size-modern:hover {
+            background-color: var(--bg, #f6f6f6);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-size-modern.active,
+        .btn-size-modern:has(input[type="radio"]:checked) {
+            background-color: var(--accent, #000) !important;
+            border-color: var(--accent, #000) !important;
+            color: #fff !important;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+    /* 5. Bloco de Preços Moderno e Destacado (Compactado) */
+    .price-box {
+        background-color: #f7f7f7;
+        border-radius: 8px;
+        border-left: 5px solid var(--accent, #000);
+        /* Reduz o padding interno da caixa de preço */
+        padding: 12px;
+        /* Margem menor */
+        margin-bottom: 15px !important;
+    }
+
+    .price-original-detail {
+        font-size: 1rem;
+        color: var(--muted);
+        text-decoration: line-through;
+    }
+
+    .price-venda-detail {
+        font-size: 2.2rem; /* Reduzido de 2.8rem */
+        font-weight: 900;
+        color: #e74c3c;
+        line-height: 1.1;
+        margin-top: 5px;
+    }
+
+    .price-pix-detail {
+        font-size: 1.0rem; /* Reduzido de 1.1rem */
+        color: var(--success);
+        font-weight: 700;
+    }
+
+    .price-parcelamento-detail {
+        font-size: 0.95rem;
+        color: var(--muted);
+    }
+
+    /* 6. Botão de Compra CTA (Compactado) */
+    .btn-buy-cta {
+        font-weight: 700;
+        font-size: 1.1rem; /* Reduzido de 1.25rem */
+        padding: 12px 20px; /* Padding menor */
+        border-radius: 8px; /* Ligeiramente menos arredondado */
+        text-transform: uppercase;
+        transition: all 0.2s;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+        .btn-buy-cta:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+    /* 7. AJUSTES DA IMAGEM (Versão de Correção de Espaçamento - PRIORIZADA) */
+    .produto-imagem-detail {
+        /* Garante que a imagem se ajuste à coluna */
+        width: 100%;
+        height: auto;
+        /* Limitação de Altura */
+        max-height: 500px;
+        /* Configurações Visuais Solicitadas */
+        border-radius: var(--radius, 10px); /* Bordas Arredondadas */
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15); /* Sombra mais destacada */
+        /* Garante que a imagem inteira seja visível (não cortada) */
+        object-fit: cover;
+        /* Adiciona transição para o efeito de zoom */
+        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        cursor: zoom-in;
+        /* Se a imagem tiver fundo branco, o fundo que aparece agora é o background do .product-details-card (branco) */
+        background-color: transparent;
+    }
+
+    /* Efeito de Zoom no hover: APLICADO DIRETAMENTE NA IMG */
+    .col-lg-6:hover .produto-imagem-detail {
+        /* Adiciona um zoom sutil */
+        transform: scale(1.05);
+        /* Mantém a sombra no hover */
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    /* 8. Responsividade Mobile (Compactado) */
+    @@media (max-width: 576px) {
+        .product-details-card
+
+    {
+        padding: 10px; /* Reduz o padding no mobile */
+    }
+
+    .product-name-title {
+        font-size: 1.6rem; /* Título menor no mobile */
+    }
+
+    .price-venda-detail {
+        font-size: 1.8rem; /* Preço menor no mobile */
+    }
+
+        .produto-imagem-detail {
+                    max-height: 350px; /* Altura máxima menor no mobile */
+
+        }
+
+    }
+</style>
+
+@section Scripts {
+    <script>
+        document.getElementById('formCompra').addEventListener('submit', function(e) {
+            const errorMessageContainer = document.getElementById('tamanho-error-message');
+            // 💡 Remoção do `mt-3` na mensagem de erro, já que o container já tem `mb-4` no HTML.
+            errorMessageContainer.innerHTML = ''; // Limpa a mensagem anterior
+
+            if (!document.querySelector('input[name="Tamanho"]:checked')) {
+                let messageBox = document.createElement('div');
+                messageBox.classList.add('alert', 'alert-danger'); // Removido o mt-3
+                messageBox.innerText = "🚨 Por favor, selecione uma numeração antes de prosseguir.";
+
+                // Insere a mensagem de erro no container dedicado
+                errorMessageContainer.appendChild(messageBox);
+
+                // 🚀 Adicionado um scroll suave para a área de seleção se o erro ocorrer
+                document.getElementById('tamanho-opcoes').scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                e.preventDefault();
+            }
+        });
+
+        // Adiciona feedback visual ao selecionar (mantido)
+        document.querySelectorAll('.btn-size-modern input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                // Remove a classe 'active' de todos
+                document.querySelectorAll('.btn-size-modern').forEach(label => {
+                    label.classList.remove('active');
+                    label.style.backgroundColor = ''; // Limpa o fundo
+                    label.style.borderColor = ''; // Limpa a borda
+                    label.style.color = ''; // Limpa a cor do texto
+                });
+
+                // Adiciona a classe 'active' ao selecionado
+                if (this.checked) {
+                    const parentLabel = this.closest('label');
+                    parentLabel.classList.add('active');
+                    // Estilo de seleção mais moderno
+                    parentLabel.style.backgroundColor = 'var(--accent, #000)';
+                    parentLabel.style.borderColor = 'var(--accent, #000)';
+                    parentLabel.style.color = '#fff';
+
+                    // 💡 Opcional: Limpa a mensagem de erro assim que um tamanho é selecionado
+                    document.getElementById('tamanho-error-message').innerHTML = '';
+                }
+            });
+        });
+
+    </script>
+}

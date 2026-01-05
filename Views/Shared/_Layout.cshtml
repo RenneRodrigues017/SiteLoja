@@ -1,0 +1,482 @@
+@{
+    var lojaNome = "RF Marcas";
+}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>@ViewData["Title"] - @lojaNome</title>
+    <link rel="icon" type="image/png" href="~/images/logo-preta.png" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <style>
+        /* ======================================= */
+        /* ESTILOS GERAIS/DESKTOP */
+        /* ======================================= */
+       
+
+        /* Estilos de rolagem (MANTIDO) */
+        .announcement-text-scroller {
+            color: #fff;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin: 0;
+            padding: 0 15px;
+            display: inline-block;
+            width: max-content;
+        }
+
+        .announcement-scroll-container {
+            white-space: nowrap;
+            width: 100%;
+            text-align: center;
+        }
+
+        .announcement-text-scroller a {
+            color: #007bff;
+            text-decoration: underline;
+        }
+
+        /* AJUSTES PARA A BARRA DE CATEGORIAS (category-nav) - MANTIDO NO DESKTOP */
+        .category-nav {
+            background-color: #f8f8f8;
+            border-bottom: 1px solid #eee;
+            padding: 10px 0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+
+        .category-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+
+        .category-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            flex-grow: 1;
+        }
+
+        .category-item a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 600;
+            padding: 5px 10px;
+            transition: color 0.3s ease;
+        }
+
+        /* 📌 NOVO: Reduz a altura do cabeçalho */
+        .rf-header {
+            background-color: #000;
+            z-index: 1000;
+            padding: 0; /* Padding reduzido */
+        }
+
+        /* BARRA DE ANÚNCIOS - DESKTOP/PADRÃO (MANTIDO) */
+        .top-announcement-bar {
+            padding: 8px 0;
+            margin-bottom: 0;
+            background-color: #000;
+            overflow: hidden;
+        }
+
+        /* 📌 NOVO: Define o header-inner como linha horizontal (lado a lado) */
+        .header-inner {
+            display: flex; /* Transforma o container em linha */
+            flex-direction: row; /* Volta para layout de linha */
+            justify-content: space-between; /* Distribui os itens */
+            align-items: center; /* Alinha verticalmente */
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2px 20px; /* Padding interno reduzido */
+            position: relative;
+        }
+
+        /* 📌 NOVO: Ajuste do Container da Logo */
+        .header-left {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            width: auto;
+        }
+
+            .header-left .logo-image {
+                height: 80px; /* Tamanho reduzido da logo no desktop */
+                width: auto;
+            }
+
+        /* 📌 NOVO: Ajuste da Barra de Busca */
+        .search-form-hero {
+            display: flex;
+            flex-grow: 1; /* Ocupa o espaço restante */
+            max-width: 700px;
+            margin: 0 20px; /* Espaçamento entre Logo/Ícones e Busca */
+        }
+
+        .search-input-hero {
+            border-radius: 20px 0 0 20px;
+            border: 1px solid #ced4da;
+            border-right: none;
+            height: 40px; /* Altura da busca compacta */
+            /* Garante que o input mobile seja tratado no media query */
+        }
+
+        .btn-search-hero {
+            background-color: #007bff;
+            color: white;
+            border: 1px solid #007bff;
+            border-radius: 0 20px 20px 0;
+            padding: .375rem 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            height: 40px; /* Altura do botão compacta */
+        }
+
+        /* 📌 NOVO: Container dos Ícones (Login/Sair) */
+        .desktop-icons-container {
+            display: flex;
+            align-items: center;
+            gap: 15px; /* Espaçamento menor entre os ícones */
+            margin-top: 0;
+            width: auto;
+        }
+
+            /* ÍCONES DESKTOP */
+            .desktop-icons-container .link-action {
+                color: #fff;
+                text-decoration: none;
+                padding: 5px;
+            }
+
+                .desktop-icons-container .link-action i {
+                    font-size: 1.5em; /* Reduzido o tamanho dos ícones */
+                }
+
+        /* Footer (MANTIDO) */
+        .rf-footer {
+            background: #000;
+            border-top: 1px solid #eee;
+            padding: 25px 0;
+            margin-top: 30px;
+            color: #ffffff;
+        }
+
+        .footer-social-icon {
+            height: 24px;
+            width: auto;
+            filter: invert(1);
+        }
+
+
+        /* ======================================= */
+        /* 🎯 ESTILOS ESPECÍFICOS PARA MOBILE (max-width: 992px) */
+        /* ======================================= */
+        @@media (max-width: 992px) {
+            /* 📌 CORREÇÃO 1: Ajuste o padding-top do body para a altura correta do Header Fixo + Categorias */
+            body {
+                padding-top: 140px !important; /* Ajuste para o header fixo (75px) + categorias fixas (aprox 45px) */
+            }
+            /* 🚫 REMOVE A BARRA DE ANÚNCIO (MANTIDO) */
+            .top-announcement-bar {
+                display: none !important;
+            }
+            /* 1. ESTRUTURA E ALTURA DO CABEÇALHO */
+            .rf-header {
+                position: fixed; /* 📌 MUDANÇA: Troca para fixed para fixar no topo */
+                top: 0;
+                width: 100%;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+                background-color: #000;
+                color: #fff;
+                padding-bottom: 0px;
+                padding-top: 0px;
+                z-index: 1020; /* 📌 NOVO: Z-index alto para ficar acima de tudo */
+            }
+
+            .header-inner {
+                flex-direction: column; /* Volta para layout de coluna no mobile */
+                gap: 3px;
+                padding: 5px 15px;
+            }
+            /* Container para logo e ícones na mesma linha (MANTIDO) */
+            .mobile-header-top {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                width: 100%;
+                padding-bottom: 0px;
+            }
+            /* 2. LOGO (MANTIDO) */
+            .header-left .logo-image {
+                height: 35px;
+            }
+
+            .header-left {
+                width: auto;
+            }
+            /* 3. ÍCONES LATERAIS (MANTIDO) */
+            .header-right-icons {
+                display: flex;
+                align-items: center;
+                gap: 20px;
+            }
+
+            .mobile-icon-link {
+                color: #fff;
+            }
+
+            .header-right {
+                display: none;
+            }
+            /* 4. BARRA DE PESQUISA (Ajustada para mobile) */
+            .search-form-hero {
+                margin: 0 !important;
+                max-width: 100%;
+                width: 100%;
+                flex-direction: row; /* Garante que input e botão (se visível) fiquem em linha */
+            }
+
+            .search-input-hero {
+                height: 35px;
+                font-size: 0.9rem;
+                border-radius: 20px; /* Arredondamento total no mobile */
+                border: 1px solid #ccc;
+                text-indent: 10px;
+                padding-left: 15px;
+            }
+
+            .btn-search-hero {
+                display: none; /* Oculta o botão Buscar no mobile */
+            }
+            /* 5. CATEGORIAS (AJUSTADO PARA FIXAR) */
+            .category-nav {
+                display: block !important;
+                position: fixed; /* 📌 MUDANÇA: Troca para fixed */
+                /* 📌 CORREÇÃO 2: Posiciona abaixo do header fixo (aprox. 75px) */
+                top: 75px;
+                width: 100%;
+                background-color: #f8f8f8;
+                border-bottom: 1px solid #eee;
+                z-index: 1010; /* 📌 NOVO: Fica abaixo do header (1020), mas acima do conteúdo */
+                padding: 10px 0;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+                margin-bottom: 0 !important;/* Remove a margem inferior */
+            }
+
+            .category-list {
+                justify-content: center;
+                padding: 0 15px;
+            }
+
+            .category-item a {
+                padding: 5px 0;
+                border: none;
+                background-color: transparent;
+                font-size: 0.85rem;
+                color: #333;
+            }
+            /* FOOTER MOBILE (MANTIDO) */
+            .rf-footer {
+                padding: 20px 15px;
+            }
+
+                .rf-footer .row > div {
+                    text-align: center !important;
+                    margin-bottom: 10px;
+                }
+
+                .rf-footer .row {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                }
+            /* Oculta os ícones de desktop no mobile (MANTIDO) */
+            .desktop-icons-container {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    @{
+        // Variável declarada UMA ÚNICA VEZ para evitar o erro CS0128
+        var isAuthenticated = User.Identity?.IsAuthenticated ?? false;
+    }
+
+    <header class="rf-header">
+        <div class="container-fluid header-inner">
+
+            @* 1. Topo Mobile (Logo + Ícones) *@
+            <div class="mobile-header-top d-flex d-md-none">
+                <div class="header-left">
+                    <a asp-controller="Home" asp-action="Index" class="brand-link">
+                        <img src="/images/logo_da_loja.png" alt="RF Marcas Logo" class="logo-image" />
+                    </a>
+                </div>
+
+                <div class="header-right-icons">
+                    @* Ícones Mobile (Perfil/Login e Sair/Cadastro) *@
+                    @if (isAuthenticated)
+                    {
+                        <a asp-controller="Conta" asp-action="Perfil" class="link-action mobile-icon-link" title="Minha Conta">
+                            <i class="far fa-user fa-lg"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-controller="Conta" asp-action="Login" class="link-action mobile-icon-link" title="Login/Cadastre-se">
+                            <i class="far fa-user fa-lg"></i>
+                        </a>
+                    }
+
+                    @if (isAuthenticated)
+                    {
+                        <form asp-controller="Conta" asp-action="Logout" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="link-action mobile-icon-link" style="background: none; border: none; padding: 0;" title="Sair">
+                                <i class="fas fa-sign-out-alt fa-lg"></i>
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <a asp-controller="Conta" asp-action="Cadastro" class="link-action mobile-icon-link" title="Cadastre-se">
+                            <i class="fas fa-user-plus fa-lg"></i>
+                        </a>
+                    }
+                </div>
+            </div>
+
+            @* 2. Header Desktop (Logo + Busca + Ícones) *@
+            <div class="header-left d-none d-md-flex">
+                <a asp-controller="Home" asp-action="Index" class="brand-link">
+                    <img src="/images/logo_da_loja.png" alt="RF Marcas Logo" class="logo-image" />
+                </a>
+            </div>
+
+            <form class="search-form-hero d-none d-md-flex" method="get" asp-controller="Loja" asp-action="Categoria">
+                <input type="search" name="q" placeholder="&#xf002; Buscar" class="form-control search-input-hero" style="font-family: Arial, FontAwesome;" />
+                <button type="submit" class="btn btn-search-hero">Buscar</button>
+            </form>
+
+            <div class="desktop-icons-container d-none d-md-flex">
+                @* Ícones Desktop (Perfil/Login e Sair/Cadastro) *@
+                @if (isAuthenticated)
+                {
+                    <a asp-controller="Conta" asp-action="Perfil" class="link-action" title="Minha Conta">
+                        <i class="far fa-user fa-lg"></i>
+                    </a>
+                }
+                else
+                {
+                    <a asp-controller="Conta" asp-action="Login" class="link-action" title="Login">
+                        <i class="far fa-user fa-lg"></i>
+                    </a>
+                }
+
+                @if (isAuthenticated)
+                {
+                    <form asp-controller="Conta" asp-action="Logout" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="link-action" style="background: none; border: none; padding: 0;" title="Sair">
+                            <i class="fas fa-sign-out-alt fa-lg"></i>
+                        </button>
+                    </form>
+                }
+                else
+                {
+                    <a asp-controller="Conta" asp-action="Cadastro" class="link-action" title="Cadastre-se">
+                        <i class="fas fas-user-plus fa-lg"></i>
+                    </a>
+                }
+            </div>
+
+            <div class="header-right d-none d-md-flex">
+            </div>
+
+            @* 3. Barra de Busca Mobile (separada) *@
+            <form class="search-form-hero d-flex d-md-none" method="get" asp-controller="Loja" asp-action="Categoria">
+                <input type="search" name="q" placeholder="O que você está buscando?" class="form-control search-input-hero" />
+            </form>
+
+        </div>
+    </header>
+
+    @* NAVEGAÇÃO DE CATEGORIAS (Ajustada para fixar no mobile) *@
+    <nav class="category-nav">
+        <div class="container-fluid">
+            <ul class="category-list">
+                <li class="category-item">
+                    <a asp-controller="Loja" asp-action="Categoria" asp-route-q="Mizuno">Mizuno</a>
+                </li>
+                <li class="category-item">
+                    <a asp-controller="Loja" asp-action="Categoria" asp-route-q="Nike">Nike</a>
+                </li>
+                <li class="category-item">
+                    <a asp-controller="Loja" asp-action="Categoria" asp-route-q="Adidas">Adidas</a>
+                </li>
+                <li class="category-item">
+                    <a asp-controller="Loja" asp-action="Categoria" asp-route-q="Gucci">Gucci</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container-fluid main-content">
+        <main role="main" class="site-main">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="rf-footer">
+        <div class="container text-center">
+            <div class="row align-items-center">
+
+                <div class="col-md-4 text-md-start">
+                    <p class="mb-0">&copy; @DateTime.Now.Year RF Marcas — Todos os direitos reservados.</p>
+                </div>
+
+                <div class="col-md-4 text-center social-links-container">
+                    <div class="social-links">
+                        <a href="https://www.instagram.com/_rfmarcass_/" target="_blank" title="Instagram da RF Marcas" class="text-white">
+                            <img src="/images/Instagram_icon.png" alt="Instagram Logo" class="logo-image footer-social-icon" />
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-md-4 text-md-end">
+                    <small>
+                        <a asp-controller="Home" asp-action="Atendimento" class="text-white" style="text-decoration: none;">Atendimento</a>
+                        |
+                        <a asp-controller="Home" asp-action="Politica" class="text-white" style="text-decoration: none;">Política de Privacidade</a>
+                    </small>
+                </div>
+
+            </div>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @RenderSection("Scripts", required: false)
+
+</body>
+</html>

@@ -1,0 +1,46 @@
+﻿@model SiteLoja.Models.LoginViewModel
+
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="row justify-content-center">
+    <div class="col-12 col-md-4 p-4">
+        <h2 class="text-center">Acessar Conta</h2>
+        <hr />
+
+        <form asp-controller="Conta" asp-action="Login" method="post">
+            <input type="hidden" name="ReturnUrl" value="@ViewData["ReturnUrl"]" />
+
+            <div asp-validation-summary="All" class="text-danger"></div>
+
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label"></label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Senha" class="form-label"></label>
+                <input asp-for="Senha" type="password" class="form-control" />
+                <span asp-validation-for="Senha" class="text-danger"></span>
+            </div>
+
+            <div class="d-grid gap-2 mt-4">
+                <button type="submit" class="btn btn-success">Entrar</button>
+            </div>
+
+            <hr />
+
+            <p class="text-center">
+                Ainda não tem cadastro? <a asp-controller="Conta" asp-action="Cadastro">Cadastre-se aqui</a>.
+            </p>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

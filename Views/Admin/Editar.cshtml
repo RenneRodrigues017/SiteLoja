@@ -1,0 +1,62 @@
+﻿@using SiteLoja.ViewModels
+@model EditarProdutoCompletoViewModel 
+
+@{
+    ViewData["Title"] = "Editar Produto";
+}
+
+<div class="container">
+    <h2>✏️ Editando: @Model.ProdutoParaEdicao.Nome</h2>
+    <hr />
+
+    @* Exibição de mensagens de sucesso/erro via TempData *@
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success mt-3" role="alert">
+            <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger mt-3" role="alert">
+            <i class="fas fa-times-circle"></i> @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-md-6">
+            <form asp-action="SalvarEdicao" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <input type="hidden" asp-for="ProdutoParaEdicao.Id" />
+                <input type="hidden" asp-for="TermoBuscaOriginal" />
+
+                <div class="form-group mb-3">
+                    <label asp-for="ProdutoParaEdicao.Nome" class="form-label">Nome do Produto</label>
+                    <input asp-for="ProdutoParaEdicao.Nome" class="form-control" />
+                    <span asp-validation-for="ProdutoParaEdicao.Nome" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="ProdutoParaEdicao.Categoria" class="form-label">Categoria</label>
+                    <input asp-for="ProdutoParaEdicao.Categoria" class="form-control" />
+                    <span asp-validation-for="ProdutoParaEdicao.Categoria" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mt-4">
+                    <button type="submit" class="btn btn-success">Salvar e Voltar para a Lista</button>
+
+                    <a asp-action="Atualizar" asp-controller="Admin" asp-route-termoBusca="@Model.TermoBuscaOriginal" class="btn btn-secondary">
+                        Cancelar e Voltar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -1,0 +1,277 @@
+﻿@using System.Globalization
+@model IEnumerable<SiteLoja.ViewModels.ProdutoCatalogoViewModel>
+
+@{
+    ViewData["Title"] = ViewData["TituloPagina"] ?? "Resultado da Busca";
+}
+
+<div class="container mt-5 mb-5">
+
+    <h1 class="display-5 mb-1 page-title">
+        <span class="fw-bolder">@ViewData["TituloPagina"]</span>
+    </h1>
+    <hr class="mb-5" />
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-warning" role="alert">
+            Nenhum produto ou categoria encontrado para o termo **"@ViewData["TermoBusca"]"**.
+        </div>
+    }
+
+    <div class="row">
+        @foreach (var produto in Model)
+        {
+            @* Cada coluna agora contém um wrapper de card para aplicar o estilo de sombra/elevação *@
+            <div class="col-6 col-sm-6 col-md-4 col-lg-3 mb-5 d-flex">
+                <div class="product-card-wrapper w-100">
+                    @* O link é o contêiner principal de todo o produto no catálogo *@
+                    <a asp-controller="Loja"
+                       asp-action="Detalhes"
+                       asp-route-id="@produto.Id"
+                       class="product-link text-decoration-none d-flex flex-column h-100">
+
+                        @* IMAGEM (com borda e sombra) *@
+                        <div class="product-image-wrapper">
+                            @* Usa o Aspect Ratio Box (CSS abaixo) para garantir 1:1 e centralização *@
+                            <img src="@produto.ImagemBase64"
+                                 class="img-fluid rounded-lg product-image"
+                                 alt="@produto.Nome"
+                                 loading="lazy"
+                                 onerror="this.onerror=null; this.src='https://placehold.co/400x400/CCCCCC/333333?text=Sem+Imagem';" />
+                        </div>
+
+                        @* BODY DO PRODUTO (Texto e Preços) *@
+                        <div class="product-body text-center d-flex flex-column p-3 flex-grow-1">
+
+                            @* TÍTULO/NOME *@
+                            <h5 class="product-name text-dark">@produto.Nome</h5>
+
+                            @* PREÇOS - Alocado no fim do corpo para que todos os nomes de produto fiquem alinhados no topo *@
+                            <div class="price-container mt-auto">
+                                @if (produto.PrecoPromocional.HasValue)
+                                {
+                                    @* Preço Riscado (Preço Normal) *@
+                                    <p class="text-secondary text-decoration-line-through mb-0 small opacity-75">
+                                        R$ @produto.PrecoNormal.ToString("N2")
+                                    </p>
+                                    @* Preço em Destaque (Preço Promocional) *@
+                                    <h4 class="fw-bolder mb-1 current-price text-dark">
+                                        R$ @produto.PrecoPromocional.Value.ToString("N2")
+                                    </h4>
+                                }
+                                else
+                                {
+                                    @* Placeholder para manter o layout alinhado quando não há preço riscado *@
+                                    <p class="mb-0 invisible small placeholder-line">Preço Riscado</p>
+                                    @* Preço em Destaque (Preço Normal) *@
+                                    <h4 class="fw-bolder mb-1 current-price text-dark">
+                                        R$ @produto.PrecoNormal.ToString("N2")
+                                    </h4>
+                                }
+
+                                @* Texto do Pix em Verde *@
+                                @if (!string.IsNullOrEmpty(produto.PrecoPix))
+                                {
+                                    <p class="mb-0 fw-bold small text-success price-pix-text">
+                                        Pix R$@produto.PrecoPix
+                                    </p>
+                                }
+                            </div>
+
+                            @* Botão/Link de Detalhes - Mantenha o link (a) fora do link principal (a) *@
+                            <div class="d-flex justify-content-center mt-3">
+                                <span class="btn-detail-link fw-semibold">
+                                    Ver Detalhes
+                                </span>
+                            </div>
+
+                        </div>
+
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    /* ------------------------------------------- */
+    /* 1. VARIÁVEIS DE COR E TEMA */
+    /* ------------------------------------------- */
+    :root {
+        --card-bg-color: #ffffff; /* Fundo do card */
+        --accent-color: #1a1a1a; /* Preto (Moderno e forte) */
+        --price-color: #008000; /* Verde escuro (Mais elegante para Pix) */
+        --text-color: #212529; /* Texto principal */
+        --shadow-light: rgba(0, 0, 0, 0.08);
+        --shadow-medium: rgba(0, 0, 0, 0.18);
+        --transition-speed: 0.2s;
+    }
+
+    /* Título da Página */
+    .page-title {
+        color: var(--text-color);
+        font-family: 'Inter', sans-serif;
+    }
+
+    /* ------------------------------------------- */
+    /* 2. CARD DO PRODUTO (O wrapper principal) */
+    /* ------------------------------------------- */
+    .product-card-wrapper {
+        background-color: var(--card-bg-color);
+        border-radius: 12px; /* Cantos mais suaves */
+        overflow: hidden;
+        /* Sombra inicial suave (elevação) */
+        box-shadow: 0 4px 10px var(--shadow-light);
+        transition: box-shadow var(--transition-speed) ease-out, transform var(--transition-speed) ease-out;
+        height: 100%; /* Garante que todos os cards na linha tenham a mesma altura */
+    }
+
+        /* Efeito de Elevação (Lift) no Hover */
+        .product-card-wrapper:hover {
+            box-shadow: 0 10px 25px var(--shadow-medium); /* Sombra mais intensa */
+            transform: translateY(-5px); /* Efeito de elevação sutil */
+        }
+
+    /* Estilo do link principal do produto */
+    a.product-link {
+        color: var(--text-color) !important;
+        /* IMPORTANTE: Garante que o link ocupe todo o card */
+        height: 100%;
+    }
+
+    /* ------------------------------------------- */
+    /* 3. IMAGEM FLUTUANTE (Aspect Ratio Box 1:1) */
+    /* *** SOLUÇÃO 1: FOTO PREENCHENDO O ESPAÇO *** */
+    /* ------------------------------------------- */
+    .product-image-wrapper {
+        width: 100%;
+        position: relative;
+        padding-bottom: 100%; /* Altura = 100% da Largura (Aspect Ratio 1:1) */
+        overflow: hidden;
+        border-bottom: 1px solid #eee; /* Linha sutil para separar imagem do corpo */
+        background-color: #f7f7f7; /* Fundo claro para o wrapper */
+    }
+
+    .product-image {
+        /* Centraliza a imagem no Aspect Ratio Box */
+        position: absolute;
+        top: 0;
+        left: 0;
+        transform: none; /* Remove a centralização por transform */
+        /* Encaixe e Transição */
+        width: 100%; /* Agora ocupa 100% da largura/altura do wrapper */
+        height: 100%;
+        object-fit: cover; /* *** CORREÇÃO: Usa 'cover' para preencher todo o espaço *** */
+        transition: transform var(--transition-speed) ease-out;
+        border-radius: 0; /* Remove rounded-lg na imagem para preencher os cantos do wrapper */
+    }
+
+    /* Efeito de Zoom da Imagem no Hover */
+    .product-card-wrapper:hover .product-image {
+        transform: scale(1.08); /* Zoom sutil e mais notável */
+    }
+
+    /* ------------------------------------------- */
+    /* 4. TEXTO E PREÇOS */
+    /* *** SOLUÇÃO 2: APROXIMAR TÍTULO E VALOR *** */
+    /* ------------------------------------------- */
+
+    /* Contêiner de Texto */
+    .product-body {
+        /* Ajuste do padding para ser mais compacto */
+        padding: 10px !important;
+        /* Garante que o body não fique muito alto */
+        min-height: auto;
+    }
+
+    /* Nome do Produto */
+    .product-name {
+        font-weight: 600;
+        font-size: 1.1rem; /* Aumenta um pouco */
+        margin-bottom: 4px !important; /* *** CORREÇÃO: Reduz o espaçamento inferior (mais perto do preço) *** */
+        line-height: 1.3;
+        /* Limita a duas linhas para manter o layout limpo */
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        height: calc(1.3em * 2); /* Altura exata para 2 linhas */
+    }
+
+    /* Contêiner de Preços */
+    .price-container {
+        /* Garante que o contêiner de preço comece imediatamente após o nome */
+        margin-top: 0.5rem !important; /* Mantém um pequeno espaço entre nome e preço */
+    }
+
+        /* Preço Riscado (Preço Normal) */
+        .price-container p.text-secondary {
+            height: 1.2rem;
+            line-height: 1.2;
+            margin-bottom: 0px !important; /* Remove margem inferior padrão */
+        }
+
+    /* Preço Atual em Destaque */
+    .current-price {
+        font-size: 1.7rem; /* Maior destaque */
+        color: var(--accent-color) !important; /* Usa a cor principal da loja */
+        margin-bottom: 4px !important; /* Espaçamento menor após o preço */
+        line-height: 1;
+    }
+
+    /* Link Pix (Verde) */
+    .price-pix-text {
+        color: var(--price-color) !important;
+        margin-top: 0.25rem !important;
+    }
+
+    /* Botão 'Ver Detalhes': Estilo Moderno (Em bloco) */
+    .btn-detail-link {
+        display: block; /* Ocupa a largura total */
+        color: var(--card-bg-color);
+        background: var(--accent-color);
+        border: 2px solid var(--accent-color);
+        padding: 8px 0; /* Padding vertical, 0 horizontal pois é bloco */
+        width: 100%;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        letter-spacing: 0.5px;
+        transition: all var(--transition-speed) ease-in-out;
+    }
+
+    .product-card-wrapper:hover .btn-detail-link {
+        background-color: #333; /* Cor mais escura no hover */
+        border-color: #333;
+        transform: scale(1.0); /* Remove o scale para o botão */
+    }
+
+    /* ------------------------------------------- */
+    /* 5. OTIMIZAÇÕES MOBILE */
+    /* ------------------------------------------- */
+    @@media (max-width: 576px) {
+        .product-card-wrapper {
+            border-radius: 8px;
+        }
+
+        .product-name {
+            font-size: 1rem;
+        }
+
+        .current-price {
+            font-size: 1.5rem;
+        }
+
+        .btn-detail-link {
+            font-size: 0.85rem;
+            padding: 7px 0;
+            border-radius: 6px;
+        }
+
+        .product-body {
+            padding: 8px !important;
+        }
+    }
+</style>

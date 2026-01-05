@@ -1,0 +1,698 @@
+﻿@model SiteLoja.Models.Endereco
+@using System.Globalization;
+
+@{
+    ViewData["Title"] = "Finalizar Pedido e Endereço";
+
+    // CORREÇÃO: Usar o operador de coalescência nula para garantir que os valores existam
+    decimal precoNormal = (decimal)(ViewBag.PrecoNormal ?? 0.0m);
+    decimal precoPix = (decimal)(ViewBag.PrecoPix ?? 0.0m);
+
+    // CRUCIAL: Converter para int? (int anulável) e usar coalescência nula (?? 0)
+    // Vamos limitar o máximo de parcelas a 12, que é o máximo da tabela fornecida.
+    int maxParcelas = Math.Min((int)(ViewBag.MaxParcelas as int? ?? 12), 12);
+    int parcelasSemJuros = (int)(ViewBag.ParcelasSemJuros as int? ?? 0);
+}
+
+<style>
+    .product-summary-card {
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+        background-color: #f9f9f9;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .price-total {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #007bff;
+        margin-top: 10px;
+    }
+
+    /* Estilo para a opção de pagamento que inclui o select */
+    .payment-option {
+        /* Estilos padrões */
+        border: 1px solid #ccc;
+        padding: 15px;
+        margin-bottom: 10px;
+        cursor: pointer;
+    }
+
+        .payment-option.active {
+            /* Estilos que criam a 'barra azul' da imagem */
+            border-color: #007bff; /* Ou a cor exata do seu tema */
+            background-color: #e0f0ff;
+        }
+
+    /* Garante que o input-group não quebre em telas pequenas */
+    .input-group > input {
+        flex-grow: 1;
+    }
+</style>
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8">
+            <h2 class="mb-4">1. Endereço e Pagamento</h2>
+
+            <form asp-action="ProcessarPedido" method="post" id="enderecoForm">
+                <input type="hidden" asp-for="ProdutoId" />
+                <input type="hidden" asp-for="ProdutoNome" />
+                <input type="hidden" asp-for="Tamanho" />
+                @* CRUCIAL: Preço inicial do produto. Será atualizado pelo JS para PIX/Cartão Parcelado/etc. *@
+                <input type="hidden" id="PrecoHidden" asp-for="Preco" />
+                @* O parcelamento selecionado (ex: "3x de R$ 50.00" ou "PIX") *@
+                <input type="hidden" id="ParcelamentoHidden" asp-for="Parcelamento" />
+                <input type="hidden" id="FreteHidden" asp-for="Frete" />
+                @* Preço Total (Produto + Frete). Será o valor final do pedido. *@
+                <input type="hidden" id="PrecoTotalHidden" asp-for="PrecoTotal" />
+                <input type="hidden" id="CEP_Hidden" asp-for="CEP" />
+                <input type="hidden" asp-for="ImagemUrl" />
+
+                @* Campo que armazena a quantidade de parcelas (apenas um número: 0, 1, 2, 3...) *@
+                <input type="hidden" id="ParcelaSelecionadaHidden" name="ParcelaSelecionada" value="1" />
+
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        Detalhes do Endereço
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="CEP" class="form-label">CEP</label>
+                                <div class="input-group">
+                                    <input asp-for="CEP" id="CEP_Input" class="form-control" placeholder="00000-000" maxlength="9" />
+                                    <button class="btn btn-outline-secondary" type="button" id="btnCalcularFrete">
+                                        <i class="bi bi-truck"></i> Calcular Frete
+                                    </button>
+                                </div>
+                                <span asp-validation-for="CEP" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Rua" class="form-label">Rua/Avenida</label>
+                                <input asp-for="Rua" id="Rua_Input" class="form-control" required />
+                                <span asp-validation-for="Rua" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label asp-for="Numero" class="form-label">Número</label>
+                                <input asp-for="Numero" id="Numero_Input" class="form-control" required />
+                                <span asp-validation-for="Numero" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-9 mb-3">
+                                <label asp-for="Complemento" class="form-label">Complemento (Opcional)</label>
+                                <input asp-for="Complemento" id="Complemento_Input" class="form-control" />
+                                <span asp-validation-for="Complemento" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Cidade" class="form-label">Cidade</label>
+                                <input asp-for="Cidade" id="Cidade_Input" class="form-control" required />
+                                <span asp-validation-for="Cidade" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Estado" class="form-label">Estado (Ex: SP)</label>
+                                <input asp-for="Estado" id="Estado_Input" class="form-control" maxlength="2" required />
+                                <span asp-validation-for="Estado" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        Opções de Pagamento
+                    </div>
+                    <div class="card-body">
+
+                        <div class="payment-option" id="optionPix">
+                            <div class="form-check">
+                                <input class="form-check-input payment-radio" type="radio" name="Pagamento" id="pixRadio" value="PIX" required>
+                                <label class="form-check-label fw-bold" for="pixRadio">
+                                    PIX - <span class="text-success" id="precoPixDisplay">R$ @(precoPix.ToString("N2", new CultureInfo("pt-BR")))</span> (À vista com desconto)
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="payment-option" id="optionCartaoVista">
+                            <div class="form-check">
+                                <input class="form-check-input payment-radio" type="radio" name="Pagamento" id="cartaoVistaRadio" value="Cartão à Vista" required>
+                                <label class="form-check-label fw-bold" for="cartaoVistaRadio">
+                                    Cartão de Crédito à Vista - <span id="precoCartaoVistaDisplay">R$ @(precoNormal.ToString("N2", new CultureInfo("pt-BR")))</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="payment-option" id="optionCartaoParcelado">
+                            <div class="form-check mb-2">
+                                <input class="form-check-input payment-radio" type="radio" name="Pagamento" id="cartaoParceladoRadio" value="Cartão Parcelado" required>
+                                <label class="form-check-label fw-bold" for="cartaoParceladoRadio">
+                                    Cartão de Crédito Parcelado
+                                </label>
+                            </div>
+
+                            <div id="parcelamentoDropdown" class="ms-4 mt-2" style="display: none;">
+                                <label for="selectParcelas" class="form-label small text-muted">Selecione o número de parcelas:</label>
+                                <select id="selectParcelas" class="form-select form-select-sm" disabled>
+                                </select>
+                                <small class="text-info mt-1" id="infoParcelaSelecionada"></small>
+                            </div>
+                        </div>
+
+                        @if (ViewData.ModelState["Pagamento"] != null && ViewData.ModelState["Pagamento"].Errors.Any())
+                        {
+                            <div class="text-danger mt-2">@ViewData.ModelState["Pagamento"].Errors.First().ErrorMessage</div>
+                        }
+                    </div>
+                </div>
+
+                <div class="alert alert-danger mt-3" role="alert" id="mensagemErroFrete" style="display: none;">
+                </div>
+
+                <button type="submit" class="btn btn-success btn-lg w-100">
+                    <i class="bi bi-whatsapp"></i> Finalizar Pedido via WhatsApp
+                </button>
+            </form>
+        </div>
+
+        <div class="col-lg-4">
+            <h2 class="mb-4">2. Seu Pedido</h2>
+            <div class="product-summary-card">
+                <img src="@Model.ImagemUrl" class="img-fluid rounded mb-3" alt="Imagem do Produto" style="max-height: 200px; object-fit: cover; width: 100%;" />
+
+                <h5 class="fw-bold">@Model.ProdutoNome</h5>
+                <p>Tamanho: <span class="fw-bold">@Model.Tamanho</span></p>
+
+                <hr />
+
+                <p class="mb-1">Preço do Produto: R$ <span id="precoProdutoDisplay">@Model.Preco.ToString("N2", new CultureInfo("pt-BR"))</span></p>
+                <p class="mb-1" id="linhaFrete">
+                    Frete:
+                    <span id="freteDisplay">
+                        @if (Model.Frete > 0)
+                        {
+                            @:R$ @Model.Frete.ToString("N2", new CultureInfo("pt-BR"))
+                        }
+                        else
+                        {
+                            <span class="text-danger small">(Calcular no campo CEP)</span>
+                        }
+                    </span>
+                </p>
+
+                <div class="price-total border-top pt-2 mt-2">
+                    Total a Pagar: R$ <span id="precoTotalDisplay">@Model.PrecoTotal.ToString("N2", new CultureInfo("pt-BR"))</span>
+                </div>
+
+                <div class="mt-3">
+                    <span id="parcelamentoDisplay" class="text-muted small">
+                        Selecione a forma de pagamento.
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // --- CONSTANTES DE CÁLCULO (Passadas do Controller para o JS) ---
+        // Acesso seguro aos ViewBags para o JavaScript, usando o fallback de 0 caso a conversão no Razor falhe
+        // Usando CultureInfo.InvariantCulture para o parse do JS
+        const precoNormal =(@Html.Raw(precoNormal.ToString(CultureInfo.InvariantCulture)));
+        const precoPix = (@Html.Raw(precoPix.ToString(CultureInfo.InvariantCulture)));
+        const MAX_PARCELAS = (@maxParcelas); // Agora é no máximo 12
+
+        // Tabela de Juros em JavaScript (em percentual de AUMENTO sobre o PREÇO NORMAL)
+        const TAXAS_PARCELAMENTO = {
+            1: 0.00, // Cartão à Vista (não usado no select, mas útil para lógica)
+            2: 0.00,
+            3: 5.39,
+            4: 6.12,
+            5: 6.85,
+            6: 7.57,
+            7: 8.28,
+            8: 8.99,
+            9: 9.69,
+            10: 10.38,
+            11: 11.06,
+            12: 11.74
+        };
+
+        let freteAtual = parseFloat(@Html.Raw(Model.Frete.ToString(CultureInfo.InvariantCulture)));
+        let precoProdutoAtual = precoNormal; // Começa com o preço normal
+
+        // Elementos da UI
+        const freteDisplay = document.getElementById('freteDisplay');
+        const precoTotalDisplay = document.getElementById('precoTotalDisplay');
+        const precoProdutoDisplay = document.getElementById('precoProdutoDisplay');
+        const precoPixDisplay = document.getElementById('precoPixDisplay');
+        const precoCartaoVistaDisplay = document.getElementById('precoCartaoVistaDisplay');
+
+        const precoHidden = document.getElementById('PrecoHidden');
+        const freteHidden = document.getElementById('FreteHidden');
+        const precoTotalHidden = document.getElementById('PrecoTotalHidden');
+        const cepInput = document.getElementById('CEP_Input');
+        const cepHidden = document.getElementById('CEP_Hidden');
+        const parcelamentoDisplay = document.getElementById('parcelamentoDisplay');
+        const parcelamentoHidden = document.getElementById('ParcelamentoHidden');
+
+
+        // Elementos de Pagamento
+        const paymentRadios = document.querySelectorAll('.payment-radio');
+        const selectParcelas = document.getElementById('selectParcelas');
+        const parcelaSelecionadaHidden = document.getElementById('ParcelaSelecionadaHidden');
+        const parcelamentoDropdown = document.getElementById('parcelamentoDropdown');
+        const infoParcelaSelecionada = document.getElementById('infoParcelaSelecionada');
+
+        // Divs para destacar
+        const optionPix = document.getElementById('optionPix');
+        const optionCartaoVista = document.getElementById('optionCartaoVista');
+        const optionCartaoParcelado = document.getElementById('optionCartaoParcelado');
+
+
+        // Elementos do Endereço (para ViaCEP)
+        const ruaInput = document.getElementById('Rua_Input');
+        const numeroInput = document.getElementById('Numero_Input');
+        const complementoInput = document.getElementById('Complemento_Input');
+        const cidadeInput = document.getElementById('Cidade_Input');
+        const estadoInput = document.getElementById('Estado_Input');
+
+
+        // Função para formatar Decimal para o padrão brasileiro (R$ 0,00)
+        function formatarMoeda(valor) {
+            return parseFloat(valor).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        // --- FUNÇÃO DE GERAÇÃO E ATUALIZAÇÃO DO SELECT DE PARCELAS ---
+        function gerarOpcoesParcelamento() {
+            if (MAX_PARCELAS === 0) return;
+
+            // Limpa o select antes de preencher
+            selectParcelas.innerHTML = '';
+
+            // O parcelamento começa em 2x
+            for (let i = 2; i <= MAX_PARCELAS; i++) {
+
+                let valorTotalProduto = precoNormal;
+                let descricao = "com juros";
+                let taxaJurosPercentual = 0.0;
+
+                // Busca a taxa na tabela para o número atual de parcelas (i)
+                if (TAXAS_PARCELAMENTO[i] !== undefined) {
+                    taxaJurosPercentual = TAXAS_PARCELAMENTO[i];
+
+                    // Converte a taxa de percentual (ex: 5.39) para decimal (ex: 0.0539)
+                    const fatorJuros = 1 + (taxaJurosPercentual / 100);
+
+                    // Aplica o juros ao preço original (Apenas ao preço do PRODUTO)
+                    valorTotalProduto = precoNormal * fatorJuros;
+
+                    if (taxaJurosPercentual === 0.0) {
+                        descricao = "sem juros";
+                    } else {
+                        descricao = `com juros de ${taxaJurosPercentual.toFixed(2).replace('.', ',')}%`;
+                    }
+                } else {
+                    continue;
+                }
+
+                const valorParcelaProduto = valorTotalProduto / i; // Valor da parcela SEM frete
+
+                // Texto de exibição
+                const optionText = `${i}x de R$ ${formatarMoeda(valorParcelaProduto)} (Total: R$ ${formatarMoeda(valorTotalProduto)}) - ${descricao}`;
+
+                // Cria o elemento option
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = optionText;
+
+                // Adiciona os atributos data-* para facilitar o cálculo do total na função atualizarTotal
+                option.setAttribute('data-valor-total', valorTotalProduto.toFixed(2));
+                option.setAttribute('data-valor-parcela', valorParcelaProduto.toFixed(2));
+                option.setAttribute('data-juros-descricao', descricao);
+
+                selectParcelas.appendChild(option);
+            }
+
+            // Garante que a primeira opção (2x) esteja selecionada ao carregar
+            if (selectParcelas.options.length > 0) {
+                selectParcelas.value = 2;
+            }
+        }
+        // --- FIM DA FUNÇÃO DE GERAÇÃO ---
+
+
+        // Função que atualiza o texto de parcelamento no resumo do pedido
+        function atualizarParcelamentoDisplay() {
+            const radioSelecionado = document.querySelector('input[name="Pagamento"]:checked');
+            let textoParcelamento = 'Selecione a forma de pagamento.';
+            let parcelas = 1; // 1 para PIX/Vista
+
+            if (radioSelecionado) {
+                const formaPagamento = radioSelecionado.value;
+
+                if (formaPagamento === 'PIX') {
+                    const totalPix = precoPix + freteAtual;
+                    textoParcelamento = `Pagamento à vista no PIX: **R$ ${formatarMoeda(totalPix)}**`;
+                    parcelas = 1;
+                    precoProdutoAtual = precoPix;
+
+                } else if (formaPagamento === 'Cartão à Vista') {
+                    const totalVista = precoNormal + freteAtual;
+                    textoParcelamento = `Pagamento à vista no Cartão: **R$ ${formatarMoeda(totalVista)}**`;
+                    parcelas = 1;
+                    precoProdutoAtual = precoNormal;
+
+                } else if (formaPagamento === 'Cartão Parcelado') {
+                    const selectedOption = selectParcelas.options[selectParcelas.selectedIndex];
+                    if (selectedOption) {
+                        const valorTotalProduto = parseFloat(selectedOption.getAttribute('data-valor-total'));
+                        const valorParcelaProduto = parseFloat(selectedOption.getAttribute('data-valor-parcela'));
+                        const jurosDescricao = selectedOption.getAttribute('data-juros-descricao');
+                        const numParcelas = parseInt(selectedOption.value);
+
+                        const totalComFrete = valorTotalProduto + freteAtual;
+                        const valorParcelaTotal = valorParcelaProduto + (freteAtual / numParcelas); // Distribui o frete nas parcelas
+
+                        // Atualiza a descrição na seção de pagamento (para dar feedback sobre o juros)
+                        infoParcelaSelecionada.innerHTML = `**${numParcelas}x de R$ ${formatarMoeda(valorParcelaTotal)}** (Inclui Frete) - ${jurosDescricao}`;
+
+                        // Atualiza a descrição no resumo do pedido
+                        textoParcelamento = `**${numParcelas}x de R$ ${formatarMoeda(valorParcelaTotal)}** (Total: R$ ${formatarMoeda(totalComFrete)})`;
+                        parcelas = numParcelas;
+                        precoProdutoAtual = valorTotalProduto; // O preço do produto JÁ com juros
+                    }
+                }
+
+                // Exibe o select de parcelas apenas se for Cartão Parcelado
+                parcelamentoDropdown.style.display = (formaPagamento === 'Cartão Parcelado') ? 'block' : 'none';
+                selectParcelas.disabled = (formaPagamento !== 'Cartão Parcelado');
+                infoParcelaSelecionada.style.display = (formaPagamento === 'Cartão Parcelado') ? 'block' : 'none';
+
+                // Atualiza o hidden field do parcelamento
+                parcelamentoHidden.value = textoParcelamento;
+                parcelaSelecionadaHidden.value = parcelas;
+
+            } else {
+                // Caso nenhum radio esteja marcado
+                precoProdutoAtual = precoNormal;
+                parcelamentoHidden.value = 'Selecione a forma de pagamento.';
+                parcelaSelecionadaHidden.value = 1; // Default
+                parcelamentoDropdown.style.display = 'none';
+            }
+
+            parcelamentoDisplay.innerHTML = textoParcelamento;
+        }
+
+        // Função principal para atualizar o total e os valores na tela
+        function atualizarTotal() {
+            // 1. Atualiza o preço do produto e os hidden fields de pagamento/parcelamento
+            atualizarParcelamentoDisplay();
+
+            // 2. Calcula o novo total (Preço do Produto (já com ajuste de pagamento) + Frete)
+            let novoTotal = precoProdutoAtual + freteAtual;
+
+            // 3. Atualiza a UI e Hidden Fields
+            precoProdutoDisplay.innerText = formatarMoeda(precoProdutoAtual);
+            precoTotalDisplay.innerText = formatarMoeda(novoTotal);
+
+            // Atualiza os campos escondidos para o POST
+            precoHidden.value = precoProdutoAtual.toFixed(2).replace('.', ',');
+            freteHidden.value = freteAtual.toFixed(2).replace('.', ',');
+            precoTotalHidden.value = novoTotal.toFixed(2).replace('.', ',');
+
+            // 4. Atualiza a exibição de frete
+            if (freteAtual === 0.00) {
+                freteDisplay.innerHTML = '<span class="text-success fw-bold">GRÁTIS!</span>';
+            } else {
+                freteDisplay.innerText = 'R$ ' + formatarMoeda(freteAtual);
+            }
+        }
+
+        // Função para destacar a caixa da opção selecionada
+        function highlightSelectedOption(formaPagamento) {
+            // Remove destaque de todos
+            optionPix.classList.remove('selected');
+            optionCartaoVista.classList.remove('selected');
+            optionCartaoParcelado.classList.remove('selected');
+
+            // Adiciona destaque ao selecionado
+            if (formaPagamento === 'PIX') {
+                optionPix.classList.add('selected');
+            } else if (formaPagamento === 'Cartão à Vista') {
+                optionCartaoVista.classList.add('selected');
+            } else if (formaPagamento === 'Cartão Parcelado') {
+                optionCartaoParcelado.classList.add('selected');
+            }
+        }
+
+
+        // --- FUNÇÃO PARA BUSCAR E PREENCHER ENDEREÇO VIA CEP ---
+        async function preencherEndereco(cepLimpo) {
+            if (cepLimpo.length !== 8) return;
+
+            // Define os campos como "Buscando..."
+            ruaInput.value = 'Buscando...';
+            cidadeInput.value = 'Buscando...';
+            estadoInput.value = 'Buscando...';
+
+            try {
+                // Endpoint da ViaCEP
+                const url = `https://viacep.com.br/ws/${cepLimpo}/json/`;
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.erro) {
+                    // CEP não encontrado
+                    ruaInput.value = '';
+                    cidadeInput.value = '';
+                    estadoInput.value = '';
+                    return;
+                }
+
+                // Preenche os campos (exceto o número, que deve ser manual)
+                ruaInput.value = data.logradouro || '';
+                complementoInput.value = data.complemento || '';
+                cidadeInput.value = data.localidade || '';
+                estadoInput.value = data.uf || '';
+
+                // Foca no campo de número para o usuário completar
+                numeroInput.focus();
+
+            } catch (error) {
+                console.error("Erro ao buscar endereço no ViaCEP:", error);
+                // Limpa campos em caso de erro de rede
+                ruaInput.value = '';
+                cidadeInput.value = '';
+                estadoInput.value = '';
+            }
+        }
+        // --- FIM DA NOVA FUNÇÃO ---
+
+
+                // Função para calcular frete via AJAX
+        async function calcularFrete() {
+            const cep = cepInput.value;
+            const cepLimpo = cep.replace(/\D/g, '');
+
+            if (cepLimpo.length !== 8) {
+                // ... (trata CEP inválido)
+                return;
+            }
+
+            // A linha abaixo já existe, mas é melhor garantir que ela esteja aqui antes da chamada
+            // cepHidden.value = cepLimpo; // <--- Não precisa estar aqui, pois ela será atualizada dentro do bloco 'ok'
+
+            // Preenche o endereço automaticamente
+            await preencherEndereco(cepLimpo); // Executa a busca de endereço
+
+            freteDisplay.innerHTML = '<i class="spinner-border spinner-border-sm"></i> Calculando...';
+
+            try {
+                // Chama a Action do Controller
+                const response = await fetch(`/Loja/CalcularFrete?cep=${cepLimpo}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    freteAtual = parseFloat(data.frete); // Recebe o frete do C#
+
+                    // 🌟 CORREÇÃO CRÍTICA: Atualizar o hidden field apenas no SUCESSO.
+                    cepHidden.value = cepLimpo;
+
+                    limparErro(); // Adicionei isso para garantir que erros anteriores sejam limpos
+                } else {
+                    freteAtual = 35.00; // Frete padrão em caso de falha
+                    console.error("Erro no cálculo do frete:", data.erro || response.statusText);
+                    // ⚠️ Recomendação: Chamar exibirErro aqui para informar o usuário
+                }
+
+                atualizarTotal(); // Recalcula o total com o novo frete
+            } catch (error) {
+                console.error("Erro de rede ao calcular frete:", error);
+                freteAtual = 35.00; // Frete padrão em caso de erro de rede
+                atualizarTotal();
+            }
+        }
+
+        // --- EVENT LISTENERS E INICIALIZAÇÃO ---
+
+        // 1. Adiciona o Event Listener para o botão Calcular Frete
+        document.getElementById('btnCalcularFrete').addEventListener('click', calcularFrete);
+
+        // 2. Opcional: Adiciona o cálculo automático ao sair do campo CEP (evento 'blur')
+        cepInput.addEventListener('blur', function() {
+            const cepLimpo = this.value.replace(/\D/g, '');
+            // Se o campo tiver 8 dígitos, dispara o cálculo e preenchimento
+            if (cepLimpo.length === 8) {
+                calcularFrete();
+            }
+        });
+
+        // 3. Adiciona a máscara de CEP
+        cepInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 5) {
+                e.target.value = value.substring(0, 5) + '-' + value.substring(5, 8);
+            } else {
+                e.target.value = value;
+            }
+        });
+
+        // 4. Listener para as opções de pagamento (Radios)
+        paymentRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                highlightSelectedOption(this.value); // Destaca a caixa
+
+                // Se for a opção Parcelado, seleciona 2x por padrão (o mínimo da tabela)
+                if (this.value === 'Cartão Parcelado' && selectParcelas.options.length > 0) {
+                    selectParcelas.value = 2; // Volta para 2x
+                }
+
+                atualizarTotal(); // Recalcula o total (com o novo preço base)
+            });
+        });
+
+        // 5. Listener para o select de parcelas
+        selectParcelas.addEventListener('change', atualizarTotal);
+
+        // 6. Listener para o click nas DIVs de opção de pagamento (melhora a usabilidade)
+        optionPix.addEventListener('click', () => { document.getElementById('pixRadio').checked = true; atualizarTotal(); });
+        optionCartaoVista.addEventListener('click', () => { document.getElementById('cartaoVistaRadio').checked = true; atualizarTotal(); });
+        optionCartaoParcelado.addEventListener('click', () => { document.getElementById('cartaoParceladoRadio').checked = true; atualizarTotal(); });
+
+
+                // 7. Validação de Submissão do Formulário
+        const enderecoForm = document.getElementById('enderecoForm');
+        const mensagemErroFrete = document.getElementById('mensagemErroFrete'); // Elemento de erro
+
+        // Função para exibir o erro na tela
+        function exibirErro(mensagem) {
+            mensagemErroFrete.textContent = '⚠️ ' + mensagem;
+            mensagemErroFrete.style.display = 'block';
+            document.getElementById('btnCalcularFrete').focus();
+        }
+
+        // Função para esconder o erro
+        function limparErro() {
+            mensagemErroFrete.style.display = 'none';
+            mensagemErroFrete.textContent = '';
+        }
+
+        enderecoForm.addEventListener('submit', function(e) {
+            limparErro(); // Limpa qualquer erro anterior ao tentar submeter
+
+            let cepInputVal = cepInput.value.replace(/\D/g, '');
+            let cepHiddenVal = cepHidden.value.replace(/\D/g, '');
+
+            // 3. Validação básica de campos de endereço
+            if (!ruaInput.value || !numeroInput.value || !cidadeInput.value || !estadoInput.value) {
+                 e.preventDefault();
+                 exibirErro("Por favor, preencha todos os campos obrigatórios do endereço (Rua, Número, Cidade, Estado).");
+                 return;
+            }
+
+            // 4. Validação de pagamento selecionado
+            const pagamentoSelecionado = document.querySelector('input[name="Pagamento"]:checked');
+            if (!pagamentoSelecionado) {
+                e.preventDefault();
+                exibirErro("Por favor, selecione uma opção de pagamento.");
+                return;
+            }
+
+            // 5. Se for Parcelado, verifica se o select tem uma opção selecionada
+            if (pagamentoSelecionado.value === 'Cartão Parcelado' && selectParcelas.selectedIndex === -1) {
+                e.preventDefault();
+                exibirErro("Por favor, selecione o número de parcelas para o Cartão de Crédito.");
+                return;
+            }
+
+            // Se passou por tudo, o JS atualiza os valores finais e permite o POST
+            atualizarTotal();
+
+            console.log("Formulário validado. Enviando pedido...");
+        });
+
+        // --- INICIALIZAÇÃO (Ao carregar a página) ---
+        document.addEventListener('DOMContentLoaded', function() {
+            // 1. Gera as opções de parcelamento na carga da página
+            gerarOpcoesParcelamento();
+
+            // 2. Marca o PIX como padrão e atualiza o total
+            const pixRadio = document.getElementById('pixRadio');
+            pixRadio.checked = true;
+            highlightSelectedOption('PIX');
+            atualizarTotal();
+
+            // 3. Se o Model veio com Frete > 0, preenche o campo do frete
+            if (freteAtual > 0.00) {
+                atualizarTotal();
+            }
+
+             // 4. Se o CEP já veio preenchido (ex: após um postback), recalcula o frete.
+            if (cepHidden.value.replace(/\D/g, '').length === 8) {
+                calcularFrete();
+            }
+        });
+    </script>
+    <script>
+        // Executa o código após o carregamento do documento
+        $(document).ready(function() {
+
+            // 1. Ouve o clique em qualquer div com a classe 'payment-option'
+            $('.payment-option').on('click', function() {
+
+                // 2. Remove a classe 'active' (que faz a barra azul) de todas as opções.
+                $('.payment-option').removeClass('active');
+
+                // 3. Adiciona a classe 'active' apenas na opção que foi clicada.
+                $(this).addClass('active');
+
+                // 4. Marca o radio button interno (importante para o envio do formulário C#)
+                $(this).find('input[type="radio"]').prop('checked', true);
+
+                // Lógica extra para mostrar/esconder a seção de parcelamento
+                var isParcelado = $(this).find('input[type="radio"]').val() === 'CARTAO_PARCELADO';
+
+                if (isParcelado) {
+                    $('#parcelamentoDetails').show();
+                } else {
+                    $('#parcelamentoDetails').hide();
+                }
+            });
+
+            // Garantir que a lógica de parcelamento seja aplicada ao carregar a página
+            // baseada na opção ativa inicial do C#
+            var initialValue = $('input[name="paymentType"]:checked').val();
+            if (initialValue !== 'CARTAO_PARCELADO') {
+                 $('#parcelamentoDetails').hide();
+            }
+        });
+    </script>
+}

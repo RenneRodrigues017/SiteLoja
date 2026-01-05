@@ -1,0 +1,372 @@
+﻿@model IEnumerable<SiteLoja.ViewModels.ProdutoCatalogoViewModel>
+
+@{
+    ViewData["Title"] = "Página Inicial";
+    Layout = "_Layout";
+}
+<link rel="stylesheet" href="~/css/site.css" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+<div class="container-fluid main-content-index">
+
+    <div class="top-title-wrapper">
+        <h1 class="section-title">RF Marcas</h1>
+        <p class="hero-subtitle">Qualidade, estilo e exclusividade em um só lugar.</p>
+    </div>
+
+    <hr class="separator" />
+
+    <section class="split-banner-section">
+        <div class="split-banner-grid">
+
+            <a asp-controller="Loja" asp-action="Categoria" asp-route-q="Mizuno" class="split-banner-item">
+                <img src="@Url.Content("~/images/banners/banner_mizuno.jpg")" alt="Mizuno Shox Z - Design Disruptivo" class="banner-image" />
+                <div class="banner-overlay">
+                    <div class="banner-text">
+                        <p class="banner-title">COLEÇÃO WAVE</p>
+                        
+                        <span class="btn btn-banner">Ver Linha Mizuno</span>
+                    </div>
+                </div>
+            </a>
+
+            <a asp-controller="Loja" asp-action="Categoria" asp-route-q="Nike" class="split-banner-item">
+                <img src="~/images/banners/banner_tn.jpg" alt="Nike TN" class="banner-image" />
+                <div class="banner-overlay">
+                    <div class="banner-text">
+                        <p class="banner-title">LINHA TN</p>
+                        
+                        <span class="btn btn-banner">Descubra Nike</span>
+                    </div>
+                </div>
+            </a>
+
+        </div>
+    </section>
+
+    <hr class="separator" />
+
+    <section class="product-highlights-section">
+        <h2 class="section-title-alt mb-4">Destaques</h2>
+
+        <p class="swipe-hint-mobile text-center">ARRASTE PARA O LADO</p>
+        @* INÍCIO DA ESTRUTURA PARA SETAS E ROLAGEM *@
+        <div class="carousel-wrapper-mobile">
+            @* Setas de Navegação (visíveis apenas no mobile) *@
+            <i class="bi bi-chevron-left scroll-arrow-mobile left" onclick="scrollCarousel('product-grid-scroll', -1)"></i>
+            <i class="bi bi-chevron-right scroll-arrow-mobile right" onclick="scrollCarousel('product-grid-scroll', 1)"></i>
+
+            @* Container da Rolagem Horizontal *@
+            <div id="product-grid-scroll" class="product-grid-highlight product-grid-scroll"> 
+                @foreach (var produto in Model)
+                {
+                    @* 📌 AJUSTE CHAVE: Mudança de col-lg-4 para col-lg-3 para ter 4 colunas no desktop *@
+                    <div class="col-6 col-sm-6 col-md-4 col-lg-3"> 
+                        <div class="card product-card-highlight h-100 shadow-sm border-0">
+                            
+                            
+                            <div class="card-image-carousel" data-product-id="@produto.Id">
+                                @* Imagem Principal *@
+                                <img src="@produto.ImagemBase64" alt="@produto.Nome" class="highlight-image card-img-top carousel-img active" data-img-index="0" />
+
+                            </div>
+                            @* FIM DO CONTAINER DE CARROSSEL *@
+                            
+                            <div class="highlight-body card-body d-flex flex-column">
+                                <p class="product-name-highlight text-center">@produto.Nome</p>
+
+                                <div class="price-row-highlight text-center mt-auto">
+                                    @if (produto.PrecoPromocional.HasValue)
+                                    {
+                                        <span class="price-original-highlight text-decoration-line-through">
+                                            R$ @produto.PrecoNormal.ToString("N2")
+                                        </span>
+                                        
+                                        <p class="price-promo-highlight text-danger fw-bold">R$ @produto.PrecoPromocional.Value.ToString("N2")</p>
+                                    }
+                                    else
+                                    {
+                                        <p class="price-promo-highlight fw-bold">R$ @produto.PrecoNormal.ToString("N2")</p>
+                                        <div style="height: 24px;"></div>
+                                    }
+                                </div>
+
+                                @if (!string.IsNullOrEmpty(produto.PrecoPix))
+                                {
+                                    <p class="price-pix-highlight">R$ @produto.PrecoPix com Pix</p>
+                                }
+                                
+                                <small class="price-installment-highlight">Em ate 12x</small>
+                                
+                                <a asp-controller="Loja" asp-action="Detalhes" asp-route-id="@produto.Id" class="btn btn-buy-highlight mt-3 w-100">
+                                    Comprar
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            @* FIM DA ESTRUTURA PARA SETAS E ROLAGEM *@
+        </div>
+        <hr class="separator" />
+    </section>
+
+    
+    <section class="feedback-section py-5">
+    <h2 class="section-title-alt text-center mb-0">✨ Clientes Felizes ✨</h2>
+    
+    @* NOVO: Texto "ARRASTE PARA O LADO" (Visível apenas no mobile) *@
+    <p class="swipe-hint-mobile text-center">ARRASTE PARA O LADO</p>
+    
+    <div class="carousel-wrapper-mobile"> @* Container para setas dos vídeos *@
+        @* Setas de Navegação (vídeos) *@
+        <i class="bi bi-chevron-left scroll-arrow-mobile left" onclick="scrollCarousel('media-grid-scroll', -1)"></i>
+        <i class="bi bi-chevron-right scroll-arrow-mobile right" onclick="scrollCarousel('media-grid-scroll', 1)"></i>
+
+        <div id="media-grid-scroll" class="media-grid row justify-content-start media-grid-scroll">
+            
+            @* Seus cards de vídeo vêm aqui... *@
+            <div class="col-12 col-sm-6 col-lg-4 mb-4">
+                <div class="card media-card shadow-sm border-0 h-100">
+                    
+                    <div class="media-video-container"
+                        data-video-id="cliente-maria" 
+                        onmouseover="iniciarVideo('cliente-maria')"
+                        onmouseout="pausarVideo('cliente-maria')">
+                        
+                        <video id="video-cliente-maria" 
+                            preload="auto" 
+                            playsinline
+                            muted 
+                            loop> <source src="@Url.Content("~/images/videos/video40.mp4")" type="video/mp4"> </video>
+                            Seu navegador não suporta a tag de vídeo.
+                        </video>
+                        
+                        <div id="overlay-cliente-maria" class="video-overlay">
+                            
+                        </div>
+                    </div>
+                    
+                    <div class="card-body">
+                        <p class="card-text fw-bold">"Top Renne gostei muito do mizunao muita qualidade"</p>
+                        <small class="text-muted d-block">— Joao G.</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-12 col-sm-6 col-lg-4 mb-4">
+                <div class="card media-card shadow-sm border-0 h-100">
+                    
+                    <div class="media-video-container"
+                        data-video-id="cliente-joao" 
+                        onmouseover="iniciarVideo('cliente-joao')"
+                        onmouseout="pausarVideo('cliente-joao')">
+                        
+                        <video id="video-cliente-joao" 
+                            preload="auto" 
+                            playsinline
+                            muted 
+                            loop> <source src="~/images/videos/video50.mp4" type="video/mp4">
+                            Seu navegador não suporta a tag de vídeo.
+                        </video>
+                        
+                        <div id="overlay-cliente-joao" class="video-overlay">
+                            
+                        </div>
+                    </div>
+                    
+                    <div class="card-body">
+                        <p class="card-text fw-bold">Tenis nao tem defeito nenhum"</p>
+                        <small class="text-muted d-block">— Lucas</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-12 col-sm-6 col-lg-4 mb-4">
+                <div class="card media-card shadow-sm border-0 h-100">
+                    
+                    <div class="media-video-container"
+                        data-video-id="cliente-ana" 
+                        onmouseover="iniciarVideo('cliente-ana')"
+                        onmouseout="pausarVideo('cliente-ana')">
+                        
+                        <video id="video-cliente-ana" 
+                            preload="auto" 
+                            playsinline
+                            muted 
+                            loop> <source src="~/images/videos/video60.mp4" type="video/mp4">
+                            Seu navegador não suporta a tag de vídeo.
+                        </video>
+                        
+                        <div id="overlay-cliente-ana" class="video-overlay">
+                            
+                        </div>
+                    </div>
+                    
+                    <div class="card-body">
+                        <p class="card-text fw-bold">"Melhor qualidade possivel"</p>
+                        <small class="text-muted d-block">— Brayan</small>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+    
+    <section class="cta-section text-center mb-5">
+        <p class="cta-text">Pronto para encontrar seu próximo estilo favorito?</p>
+
+        <a asp-controller="Loja" asp-action="Catalogo" class="btn-primary-cta">
+            EXPLORAR TODAS AS CATEGORIAS
+        </a>
+
+    </section>
+
+</div>
+
+@section Scripts {
+    <script>
+        // Lista de IDs de vídeos para controle
+        const videoIds = ['cliente-maria', 'cliente-joao', 'cliente-ana'];
+        let isAutoplayAttempted = false; // Flag para garantir a execução única
+
+        // --- Funções de Controle de Vídeo ---
+
+        function iniciarVideo(idContainer) {
+            const videoElement = document.getElementById('video-' + idContainer);
+            const overlayElement = document.getElementById('overlay-' + idContainer);
+            const containerElement = document.querySelector(`[data-video-id="${idContainer}"]`);
+
+            if (!videoElement) return;
+
+            // 1. Zoom
+            containerElement.classList.add('is-zoomed');
+            
+            // 2. Tenta iniciar a reprodução (agora o navegador deve permitir)
+            const playPromise = videoElement.play();
+            
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    console.log(`Video ${idContainer} está rodando.`);
+                }).catch(error => {
+                    console.warn(`Falha na reprodução automática de ${idContainer} (Não-Crítico, o vídeo está visível e o overlay foi removido).`);
+                });
+            }
+            
+            // 3. Remove o Overlay permanentemente (Garante o visual de "rodando" no mobile)
+            if (overlayElement && window.innerWidth <= 576) {
+                overlayElement.style.opacity = '0';
+                overlayElement.style.pointerEvents = 'none';
+            }
+        }
+
+        function pausarVideo(idContainer) {
+            // Lógica de pausa para DESKTOP, ignorada no mobile para não parar a rolagem
+            if (window.innerWidth <= 576) {
+                 const containerElement = document.querySelector(`[data-video-id="${idContainer}"]`);
+                 if(containerElement) {
+                     containerElement.classList.remove('is-zoomed');
+                 }
+                 return; 
+            }
+            
+            const videoElement = document.getElementById('video-' + idContainer);
+            const overlayElement = document.getElementById('overlay-' + idContainer);
+            const containerElement = document.querySelector(`[data-video-id="${idContainer}"]`);
+
+            if (!videoElement) return;
+
+            containerElement.classList.remove('is-zoomed');
+            videoElement.pause();
+            videoElement.currentTime = 0; 
+
+            if (overlayElement) {
+                overlayElement.style.opacity = '1';
+                overlayElement.style.pointerEvents = 'auto';
+            }
+        }
+        
+        // --- Função de Autoplay no Touch (Ação do Usuário) ---
+
+        // Função acionada na primeira interação de touch/click/scroll, para liberar o autoplay.
+        function initMobileAutoplayOnInteraction() {
+            if (isAutoplayAttempted || window.innerWidth > 576) {
+                return;
+            }
+            
+            console.log("Inicialização de vídeo forçada na interação.");
+            isAutoplayAttempted = true; 
+            
+            videoIds.forEach(id => {
+                iniciarVideo(id); // Força o play e remove o overlay
+            });
+            
+            // Remove todos os listeners após o primeiro uso
+            window.removeEventListener('click', initMobileAutoplayOnInteraction);
+            window.removeEventListener('touchstart', initMobileAutoplayOnInteraction);
+            window.removeEventListener('scroll', initMobileAutoplayOnInteraction);
+            
+            // NOVO: Remove o listener do container também
+            const mediaGrid = document.getElementById('media-grid-scroll');
+            if (mediaGrid) {
+                mediaGrid.removeEventListener('scroll', initMobileAutoplayOnInteraction);
+            }
+        }
+        
+        // --- Função de Rolagem (Mantida) ---
+        function scrollCarousel(containerId, direction) {
+            const container = document.getElementById(containerId);
+            if (container) {
+                // Chama a inicialização de autoplay na primeira rolagem (inclui a rolagem interna do carrossel)
+                if (window.innerWidth <= 576) {
+                    initMobileAutoplayOnInteraction(); 
+                }
+                
+                let itemWidth;
+                if (containerId === 'product-grid-scroll') {
+                    itemWidth = (window.innerWidth * 0.45) + 12; 
+                } else if (containerId === 'media-grid-scroll') {
+                    itemWidth = (window.innerWidth * 0.80) + 16; 
+                } else {
+                    itemWidth = container.querySelector('div').offsetWidth + 16;
+                }
+                
+                const newScrollPosition = container.scrollLeft + (itemWidth * direction);
+                
+                container.scrollTo({
+                    left: newScrollPosition,
+                    behavior: 'smooth'
+                });
+            }
+        }
+
+        // --- Inicialização da Página ---
+        document.addEventListener('DOMContentLoaded', () => {
+             videoIds.forEach(id => {
+                const video = document.getElementById('video-' + id);
+                if (video) {
+                    video.load();
+                    video.muted = true; 
+                    video.pause(); 
+                }
+            });
+
+            // Adiciona listeners para capturar a primeira interação do usuário (mobile)
+            if (window.innerWidth <= 576) {
+                window.addEventListener('click', initMobileAutoplayOnInteraction);
+                window.addEventListener('touchstart', initMobileAutoplayOnInteraction);
+                
+                // CRUCIAL: Adiciona o listener de scroll no CONTAINER ESPECÍFICO do carrossel
+                window.addEventListener('scroll', initMobileAutoplayOnInteraction); // Scroll da página
+                
+                const mediaGrid = document.getElementById('media-grid-scroll');
+                if (mediaGrid) {
+                    // Novo listener para a rolagem horizontal do carrossel de vídeos
+                    mediaGrid.addEventListener('scroll', initMobileAutoplayOnInteraction);
+                }
+            }
+        });
+    </script>
+}
