@@ -1107,320 +1107,120 @@ body {
         gap: 15px; /* Mantém o espaçamento */
     }
 
-    @@media (min-width: 576px) {
-        /* Reverte a exibição das setas de rolagem do contêiner */
-        /* CORRIGIDO: Esta regra garante que as setas NÃO apareçam no desktop */
-        .scroll-arrow-mobile {
+    /* ====================================
+   RESPONSIVIDADE E CORREÇÕES DESKTOP
+   ==================================== */
+
+    /* 1. REGRAS PARA TELAS GRANDES (DESKTOP) */
+    @media (min-width: 576px) {
+        /* Esconde setas de rolagem mobile e texto de ajuda no PC */
+        .scroll-arrow-mobile,
+        .swipe-hint-mobile {
             display: none !important;
         }
 
-        .image-arrow {
-            display: none !important;
-        }
-
+        /* Transforma o carrossel em GRID fixo no Desktop */
         .product-grid-scroll,
         .media-grid-scroll {
-            display: flex;
-            flex-wrap: wrap;
-            overflow-x: visible;
-            padding: 0 0 1rem 0;
-            margin-left: -7.5px; /* Compensa o padding de 7.5px do item (padrão Bootstrap) */
-            margin-right: -7.5px;
+            display: flex !important;
+            flex-wrap: wrap !important;
+            overflow-x: visible !important;
+            padding: 0;
+            margin-left: -15px;
+            margin-right: -15px;
         }
 
-        .product-highlights-section .product-grid-scroll > div.col-lg-3 {
-            flex: 0 0 25%;
-            max-width: 25%;
-            /* Adiciona o padding que foi removido no pai (para dar o espaçamento entre itens) */
-            padding-left: 7.5px;
-            padding-right: 7.5px;
-        }
-        /* Garante que os vídeos usem o layout de coluna do Bootstrap */
-        .media-grid-scroll > .col-12 {
-            flex: 0 0 auto !important;
-            max-width: 33.333333%; /* Para 3 colunas de vídeo (col-lg-4) no desktop */
-        }
-        /* 📌 CORREÇÃO DE TAMANHO DA IMAGEM */
-        .product-card-highlight .highlight-image {
-            width: 100%;
-            height: auto;
+            /* Garante que os itens de DESTAQUE ocupem 25% (4 colunas) */
+            .product-grid-scroll > div {
+                flex: 0 0 25% !important;
+                max-width: 25% !important;
+                padding: 15px;
+            }
+
+            /* Garante que os VÍDEOS ocupem 33.33% (3 colunas) */
+            .media-grid-scroll > div {
+                flex: 0 0 33.333% !important;
+                max-width: 33.333% !important;
+                padding: 15px;
+            }
+
+        /* Ajuste da imagem para não achatar no Desktop */
+        .highlight-image {
+            height: 300px !important; /* Altura fixa adequada para PC */
             object-fit: cover;
         }
-    }
-    /* ----------------------------------------------------------------------------------- */
-    /* ESTILOS CUSTOMIZADOS PARA O CARROSSEL DENTRO DO CARD (MANTIDOS) */
-    /* ----------------------------------------------------------------------------------- */
 
+        /* Ajuste do container de vídeo para não ficar gigante */
+        .media-video-container {
+            padding-top: 130% !important; /* Proporção melhor para Desktop */
+        }
+    }
+
+    /* 2. REGRAS PARA TELAS PEQUENAS (MOBILE) */
+    @media (max-width: 575.98px) {
+        .product-highlights-section .section-title-alt {
+            text-align: center;
+        }
+
+        .swipe-hint-mobile {
+            display: block !important;
+            text-align: center;
+        }
+
+        /* Força o comportamento de carrossel de dedo */
+        .product-grid-scroll {
+            display: flex !important;
+            flex-wrap: nowrap !important;
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch;
+            padding: 0 1rem 1rem 1rem;
+        }
+
+            .product-grid-scroll::-webkit-scrollbar {
+                display: none;
+            }
+
+            .product-grid-scroll > div {
+                min-width: 70vw !important; /* Aumentei um pouco para aparecer o próximo card */
+                flex: 0 0 auto !important;
+                margin-right: 15px;
+            }
+
+        /* Carrossel de Vídeos Mobile */
+        .media-grid-scroll {
+            display: flex !important;
+            flex-wrap: nowrap !important;
+            overflow-x: auto !important;
+            padding: 0 1rem 1rem 1rem;
+        }
+
+            .media-grid-scroll > div {
+                min-width: 85vw !important;
+                flex: 0 0 auto !important;
+                margin-right: 15px;
+            }
+
+        .scroll-arrow-mobile {
+            display: block !important;
+        }
+
+        .highlight-image {
+            height: 220px !important;
+        }
+    }
+
+    /* Ajustes Gerais de Elementos Internos (Fora de Media Queries se forem globais) */
     .card-image-carousel {
         position: relative;
         overflow: hidden;
     }
-
-        .card-image-carousel .carousel-img {
-            display: none;
-            position: relative;
-            transition: opacity 0.3s;
-        }
-
-            .card-image-carousel .carousel-img.active {
-                display: block;
-            }
-
-
-
-        .card-image-carousel .image-arrow.left {
-            left: 8px;
-        }
-
-        .card-image-carousel .image-arrow.right {
-            right: 8px;
-        }
-
-    /* ----------------------------------------------------------------------------------- */
-    /* ESTILOS CUSTOMIZADOS PARA O EFEITO DE VÍDEO E ZOOM (Mantidos) */
-    /* ----------------------------------------------------------------------------------- */
 
     .media-card {
         display: flex;
         flex-direction: column;
         overflow: hidden;
         border-radius: 0.75rem;
-    }
-
-    .media-video-container {
-        position: relative;
-        width: 100%;
-        /* Altura para manter a proporção 9:16 (vídeo vertical) */
-        padding-top: 100%;
-        overflow: hidden;
-        background-color: black;
-        border-top-left-radius: 0.75rem;
-        border-top-right-radius: 0.75rem;
-    }
-
-        .media-video-container video {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            opacity: 1;
-            transition: transform 0.3s ease-in-out;
-        }
-
-        /* Efeito de Zoom (acionado via JS) */
-        .media-video-container.is-zoomed video {
-            transform: scale(1.05);
-        }
-
-    /* Estilo do Overlay */
-    .video-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
         height: 100%;
-        background-color: rgba(0, 0, 0, 0.4); /* Fundo escuro */
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 10;
-        cursor: pointer;
-        transition: opacity 0.3s;
-        border-top-left-radius: 0.75rem;
-        border-top-right-radius: 0.75rem;
-    }
-
-        /* OCULTA O ÍCONE E O TEXTO DENTRO DO OVERLAY */
-        .video-overlay i,
-        .video-overlay p {
-            display: none;
-        }
-
-
-    /* ----------------------------------------------------------------------------------- */
-    /* REGRAS DE RESPONSIVIDADE (MOBILE FIRST) */
-    /* ----------------------------------------------------------------------------------- */
-
-    /* 📌 AJUSTE AQUI: Centraliza no desktop e mobile */
-    .top-title-wrapper {
-        text-align: center;
-    }
-
-    /* 1. Grid de Banners (Ajuste de Texto nos Banners para Mobile) */
-    .split-banner-item .banner-image {
-        width: 100%;
-        height: 350px;
-        object-fit: cover;
-    }
-
-    .banner-title {
-        font-size: 1.2rem; /* Título do Banner reduzido */
-    }
-
-    .banner-subtitle {
-        font-size: 0.9rem; /* Subtítulo do Banner reduzido */
-    }
-
-
-    /* 2. Grid de Produtos (Ajustes de Tipografia Mobile) */
-    /* AJUSTE DE TIPOGRAFIA NOS CARDS DE PRODUTO */
-    .product-name-highlight {
-        font-size: 0.9rem; /* Nome do produto menor */
-        margin-bottom: 0.25rem;
-    }
-
-    .price-promo-highlight {
-        font-size: 1.1rem; /* Preço promocional menor */
-        margin-bottom: 0;
-    }
-
-    .price-original-highlight {
-        font-size: 0.75rem; /* Preço original menor */
-    }
-
-    .price-pix-highlight {
-        font-size: 0.8rem; /* Preço PIX menor */
-        margin-top: 0.25rem;
-        margin-bottom: 0.25rem;
-    }
-
-    .price-installment-highlight {
-        font-size: 0.7rem; /* Parcelamento menor */
-    }
-
-    .btn-buy-highlight {
-        padding: 0.5rem 0.5rem; /* Padding do botão de compra reduzido */
-        font-size: 0.9rem;
-    }
-
-    /* 📌 NOVO CSS PARA A SETA DE ROLAGEM: OCULTA POR PADRÃO (REPETIDO DE FORMA CORRETA) */
-    .scroll-arrow-mobile {
-        display: none;
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        z-index: 10;
-        cursor: pointer;
-        background-color: rgba(0, 0, 0, 0.5);
-        color: white;
-        padding: 8px;
-        border-radius: 50%;
-        opacity: 0.8;
-        transition: opacity 0.2s;
-    }
-
-        .scroll-arrow-mobile.left {
-            left: 10px;
-        }
-
-        .scroll-arrow-mobile.right {
-            right: 10px;
-        }
-
-        .scroll-arrow-mobile:hover {
-            opacity: 1;
-        }
-
-    /* REGRAS DE ROLAGEM E AJUSTES DE TELA PEQUENA */
-    @media (max-width: 575.98px) {
-
-        .product-highlights-section .section-title-alt {
-            text-align: center;
-        }
-
-        .swipe-hint-mobile {
-            display: block; /* MOSTRA APENAS NO MOBILE */
-        }
-
-        .product-highlights-section {
-            padding-left: 1rem;
-            padding-right: 1rem;
-        }
-
-        .split-banner-section {
-            padding-left: 1rem;
-            padding-right: 1rem;
-        }
-
-        .split-banner-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .split-banner-item {
-            max-height: 180px;
-        }
-
-        .top-title-wrapper .section-title {
-            font-size: 1.75rem;
-        }
-
-        .top-title-wrapper .hero-subtitle {
-            font-size: 0.9rem;
-        }
-
-        .section-title-alt {
-            font-size: 1.5rem;
-        }
-
-        .feedback-section {
-            padding-top: 2rem !important; /* Diminui o topo */
-            padding-bottom: 3rem !important; /* Diminui a base se necessário */
-        }
-
-
-        /* NOVO: Estilo para forçar a rolagem horizontal nos Produtos (Mobile) */
-        .product-grid-scroll {
-            display: flex;
-            flex-wrap: nowrap;
-            overflow-x: scroll;
-            padding: 0 1rem 1rem 1rem;
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-            /* Para navegadores WebKit (Chrome, Safari) */
-            .product-grid-scroll::-webkit-scrollbar {
-                display: none;
-            }
-
-            .product-grid-scroll > div {
-                min-width: 45vw;
-                margin-right: 0.75rem;
-                flex-shrink: 0;
-            }
-
-        /* NOVO: Estilo para forçar a rolagem horizontal nos Vídeos (Mobile) */
-        .media-grid-scroll {
-            display: flex;
-            flex-wrap: nowrap;
-            overflow-x: scroll;
-            padding: 0 1rem 1rem 1rem;
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-
-            .media-grid-scroll::-webkit-scrollbar {
-                display: none;
-            }
-
-            .media-grid-scroll > div {
-                min-width: 80vw;
-                margin-right: 1rem;
-                flex-shrink: 0;
-            }
-
-            /* APLICA AS REGRAS DE ROLAGEM E LARGURA AOS ITENS */
-            .product-grid-scroll .col-sm-6,
-            .media-grid-scroll .col-12 {
-                flex: 0 0 auto !important;
-                max-width: none !important;
-            }
-
-        /* MOSTRA AS SETAS APENAS NO MOBILE */
-        .scroll-arrow-mobile {
-            display: block;
-        }
     }
 }
 
