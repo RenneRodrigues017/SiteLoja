@@ -1106,8 +1106,8 @@ body {
         grid-template-columns: 1fr 1fr; /* <-- DUAS COLUNAS NO DESKTOP */
         gap: 15px; /* Mantém o espaçamento */
     }
-
-    @media (min-width: 576px) {
+}
+@media (min-width: 576px) {
         /* Reverte a exibição das setas de rolagem do contêiner */
         /* CORRIGIDO: Esta regra garante que as setas NÃO apareçam no desktop */
         .scroll-arrow-mobile {
@@ -1323,6 +1323,7 @@ body {
             opacity: 1;
         }
 
+
     /* REGRAS DE ROLAGEM E AJUSTES DE TELA PEQUENA */
     @media (max-width: 575.98px) {
 
@@ -1422,7 +1423,7 @@ body {
             display: block;
         }
     }
-}
+
 
 
 
