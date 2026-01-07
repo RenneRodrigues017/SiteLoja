@@ -1374,11 +1374,11 @@ body {
         /* NOVO: Estilo para forçar a rolagem horizontal nos Produtos (Mobile) */
         .product-grid-scroll {
             display: flex;
-            flex-wrap: nowrap;
-            overflow-x: scroll;
-            padding: 0 1rem 1rem 1rem;
-            -ms-overflow-style: none;
-            scrollbar-width: none;
+            flex-wrap: nowrap; /* Impede que os itens quebrem linha */
+            overflow-x: auto; /* Permite o scroll */
+            gap: 10px; /* Espaço entre os cards */
+            padding: 10px;
+            -webkit-overflow-scrolling: touch;
         }
             /* Para navegadores WebKit (Chrome, Safari) */
             .product-grid-scroll::-webkit-scrollbar {
@@ -1386,10 +1386,23 @@ body {
             }
 
             .product-grid-scroll > div {
-                min-width: 45vw;
-                margin-right: 0.75rem;
-                flex-shrink: 0;
+                flex: 0 0 70% !important; /* Cada card ocupará 70% da largura da tela */
+                max-width: 70% !important;
+                min-width: 250px; /* Impede que fique pequeno demais em telas muito estreitas */
             }
+        .product-card-highlight .highlight-image {
+            height: 220px;
+            object-fit: cover;
+            width: 100%;
+        }
+        .product-name-highlight {
+            white-space: normal;
+            display: -webkit-box;
+            -webkit-line-clamp: 2; /* No máximo 2 linhas para o nome */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            min-height: 2.4em;
+        }
 
         /* NOVO: Estilo para forçar a rolagem horizontal nos Vídeos (Mobile) */
         .media-grid-scroll {
