@@ -14,7 +14,7 @@ namespace SiteLoja.Controllers
         public async Task<IActionResult> Index()
         {
             // IDs que devem aparecer nos Destaques
-            var idsDestaque = new List<int> { 34, 1081, 1209, 1127 };
+            var idsDestaque = new List<int> { 1, 10, 20, 30 };
 
             // Busca somente esses produtos do banco
             var produtos = await _produtoService.BuscarPorIds(idsDestaque);
