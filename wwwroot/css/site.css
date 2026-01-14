@@ -1435,7 +1435,30 @@ body {
         .scroll-arrow-mobile {
             display: block;
         }
+
     }
+/* Banner Promocional de Início */
+.promo-banner-section {
+    width: 100%;
+    margin-bottom: 20px;
+    padding: 0;
+}
+
+.promo-banner-img {
+    width: 100%;
+    height: auto;
+    display: block;
+    /* Adiciona uma borda suave ou sombra se desejar */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+@media (max-width: 767px) {
+    .promo-banner-section {
+        margin-left: -12px; /* Remove o padding do container-fluid se necessário */
+        margin-right: -12px;
+        width: calc(100% + 24px);
+    }
+}
 
 
 
