@@ -1445,11 +1445,10 @@ body {
 }
 
 .promo-banner-img {
-    width: 100%;
-    height: auto;
-    display: block;
-    /* Adiciona uma borda suave ou sombra se desejar */
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    width: 100%; /* Garante que a imagem estique até os lados */
+    height: auto; /* Mantém a proporção */
+    display: block; /* Remove espaçamentos de elemento inline */
+    border: none;
 }
 
 @media (max-width: 767px) {
@@ -1458,6 +1457,18 @@ body {
         margin-right: -12px;
         width: calc(100% + 24px);
     }
+}
+.promo-banner-section.full-bleed {
+    width: 100vw; /* Ocupa 100% da largura da janela */
+    margin-left: 50%; /* Técnica para ignorar padding do pai se estiver dentro de um container */
+    transform: translateX(-50%);
+    margin-top: 0;
+    padding: 0;
+    line-height: 0; /* Remove espaço fantasma abaixo da imagem */
+}
+.container-fluid.main-content-index {
+    padding-left: 0;
+    padding-right: 0;
 }
 
 
